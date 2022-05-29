@@ -1,0 +1,199 @@
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title></title>
+ 
+  <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+  <script src="node_modules/jquery/dist/jquery.min.js"></script>
+  <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+
+  <link rel="stylesheet" href="./css/assisted-keyboard.css" />
+  <script src="node_modules/auto-complete/dist/js/auto-complete.min.js"></script>
+  <script src="node_modules/ajax-call-synchronizer/dist/js/ajax-call-synchronizer.min.js"></script>
+  <script src="lib/on-screen-keyboard.js"></script>
+  <script src="lib/assisted-keyboard.js"></script>
+
+  <style>
+    html,
+    body {
+      height: 100%;
+    }
+
+    div {
+      padding: 0;
+      margin: 0;
+      border: 0 solid #000000;
+    }
+
+    ul,
+    li {
+      margin: 0;
+      padding: 0;
+    }
+
+    input[type='text']::-ms-clear {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+
+    .nouserselect {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    /*-----------------------*/
+    /*----SEARCH BOX GRID----*/
+    /*-----------------------*/
+
+    .popover {
+      border-radius: 0;
+    }
+
+    .searchbox-container {
+      width: 700px;
+    }
+
+    /*-- our cleafix hack -- */
+    .searchbox-row:before,
+    .searchbox-row:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
+    [class*='searchbox-col-'] {
+      float: left;
+      min-height: 1px;
+      /*-- our gutter -- */
+      padding: 0;
+      background-color: #ffffff;
+    }
+
+    .searchbox-col-box {
+      width: calc(100% - 100px);
+      min-width: calc(100% - 100px);
+    }
+
+    .searchbox-col-cross {
+      width: 50px;
+    }
+
+    .searchbox-col-go {
+      width: 50px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="body" style="height: 100%; min-height: 680px; margin-bottom: -60px; padding: 10px 20px 0 10px;">
+
+    <button id="btn-disable">Disable/Enable</button>
+
+    <div class="searchbox-container"
+      style="border: 1px solid #dddddd; background-color: #ffffff; padding: 2px; margin: 0 auto;">
+      <div class="searchbox-row">
+        <div class="searchbox-col-cross">
+          <div style="height: 40px; line-height: 40px;">
+            <button name="cross" id="cross" type="button"
+              style="width: 100%; border: 0; background-color: #ffffff; color: #eeeeee; font-size: 28px; font-family:'Century Gothic'; outline: none; padding: 0; margin: 0;">X</button>
+          </div>
+        </div>
+        <div class="searchbox-col-box">
+          <div style="height: 40px; line-height: 40px;">
+            <input name="region" id="region" type="hidden">
+            <div style="position: relative;">
+              <input name="query" id="query" type="text"
+                style="height: 40px; width: 100%; border: 0; outline: none; font-size: 20px; padding: 0 10px; direction: rtl;" />
+            </div>
+          </div>
+        </div>
+        <div class="searchbox-col-go nouserselect">
+          <div style="height: 40px; line-height: 40px;">
+            <button name="go" id="go"
+              style="width: 100%; border: 0; background-color: #31b81b; color: #ffffff; border-radius: 3px; font-size: 20px; outline: none; padding: 0; margin: 0; font-family: 'fontawesome-webfont'">Go</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      $(document).ready(function () {
+
+        var $target = $("#query");
+
+        $("#btn-disable").on('click', function (e) {
+          var enabled = $target.data("assistedKeyboard").getEnabled()
+          $target.data("assistedKeyboard").setEnabled(!enabled)
+        });
+
+        var crossView = function () {
+          if ($(this).val() && $(this).val().length > 0) {
+            $('#cross').show();
+          } else {
+            $('#cross').hide();
+          }
+        };
+
+        (function (ele, fn) {
+          ele.on('keyup', fn).on('click', fn).on('input', fn).on('change', fn);
+          fn.call(ele);
+
+        })($target, crossView);
+
+        $('#cross').click(function () {
+          $target.val('');
+          $(this).hide();
+        });
+
+        var $autoComplete = new AutoComplete($target, {
+          events: {
+            autoComplete: function (term, list) {
+              $target.data("assistedKeyboard").setSuggestionList(term, list);
+            }
+          },
+          trigger: {
+            match: /[^\x00-\xFF]+$/,
+            search: function (term, callback) {
+              $.getJSON('https://fqreo0aigg.execute-api.us-west-2.amazonaws.com/Prod?action=get-autocomplete&phrase=' + term + '&',
+                null,
+                function (response, textStatus) {
+                  callback(term, response.result);
+                });
+            }
+          }
+        });
+
+        $target.assistedKeyboard({
+          callbacks: {
+            getAbsolutePosition: function () {
+              return { top: 150, left: 70 };
+            }
+          },
+          events: {
+            onVisibilityChanged: null,
+            onOk: null,
+            onCancel: null
+          }
+        });
+
+        //$(window.document.body)
+        //  .click(function (e) {
+        //    console.log(e);
+        //    if (e) {
+        //      e.stopPropagation();
+        //    }
+        //    $keyboard.hide();
+
+        //  });
+
+      });
+    </script>
+</body>
+
+</html>
