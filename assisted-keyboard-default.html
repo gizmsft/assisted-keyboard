@@ -10,10 +10,11 @@
   <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
 
   <link rel="stylesheet" href="./css/assisted-keyboard.css" />
-  <script src="node_modules/auto-complete/dist/js/auto-complete.min.js"></script>
-  <script src="node_modules/ajax-call-synchronizer/dist/js/ajax-call-synchronizer.min.js"></script>
-  <script src="lib/on-screen-keyboard.js"></script>
-  <script src="lib/assisted-keyboard.js"></script>
+  <script type="text/javascript" src="node_modules/translitration-service/dist/js/dictionary.min.js"></script>
+  <script type="text/javascript" src="node_modules/auto-complete/dist/js/auto-complete.min.js"></script>
+  <script type="text/javascript" src="node_modules/ajax-call-synchronizer/dist/js/ajax-call-synchronizer.min.js"></script>
+  <script type="text/javascript" src="lib/on-screen-keyboard.js"></script>
+  <script type="text/javascript" src="lib/assisted-keyboard.js"></script>
 
   <style>
     html,
@@ -124,7 +125,8 @@
 
     <script>
       $(document).ready(function () {
-
+        var dic = Dictionary.GetInstance();
+		
         var $target = $("#query");
 
         $("#btn-disable").on('click', function (e) {
@@ -154,17 +156,18 @@
         var $autoComplete = new AutoComplete($target, {
           events: {
             autoComplete: function (term, list) {
-              $target.data("assistedKeyboard").setSuggestionList(term, list);
+              $target.data("assistedKeyboard").setSuggestionList(term, list.slice(0, 8));
             }
           },
           trigger: {
             match: /[^\x00-\xFF]+$/,
             search: function (term, callback) {
-              $.getJSON('https://fqreo0aigg.execute-api.us-west-2.amazonaws.com/Prod?action=get-autocomplete&phrase=' + term + '&',
-                null,
-                function (response, textStatus) {
-                  callback(term, response.result);
-                });
+				
+	            var list1 = dic.GetMatches(term);
+
+	            setTimeout(function () {
+	                callback(term, list1);
+	            }, 10);
             }
           }
         });

@@ -14,8 +14,6 @@ var copyCssTask = function (callback) {
 
 var copyJsTask = function (callback) {
     src([
-        'node_modules/ajax-call-synchronizer/dist/js/ajax-call-synchronizer.min.js',
-        'node_modules/auto-complete/dist/js/auto-complete.js',
         'lib/on-screen-keyboard.js',
         'lib/assisted-keyboard.js'])
         .pipe(concatPlugin('assisted-keyboard.js'))
@@ -38,8 +36,6 @@ var minifyCssTask = function (callback) {
 
 var minifyJsTask = function (callback) {
     src([
-        'node_modules/ajax-call-synchronizer/dist/js/ajax-call-synchronizer.min.js',
-        'node_modules/auto-complete/dist/js/auto-complete.js',
         'lib/on-screen-keyboard.js',
         'lib/assisted-keyboard.js'])
         .pipe(uglifyPlugin())
